@@ -1,0 +1,6 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=3435
+
+codepath.vim is a plugin that provides a simple function to obtain your code
+path directory if you have one. The concept is simple: I have a dir located
+in $HOME/code where i store all my projects and I want to set current project
+directory as root directory for plug-in like NERDTree and FuzzyFinderTextMate.
