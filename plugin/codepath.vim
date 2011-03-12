@@ -30,21 +30,16 @@ end
 let loaded_code_path = 1
 
 ruby << RUBY
-def codepath(code_dir)
-    current_dir = VIM.evaluate("getcwd()")
-    if current_dir.include?(code_dir)
-        current_dir[/#{code_dir}/]=""
-        "#{code_dir}/#{current_dir.match(/^\/([^\/]+)/)[1]}"
-    else
-        current_dir
-    end
+require "#{ENV['HOME']}/.vim/ruby/codepath"
+def codepath
+   @codepath ||= CodePath.new
 end
 RUBY
 
 function CodePath()
     let roots = []
     ruby << RUBY
-    result=codepath(VIM.evaluate("g:code_path"))
+    result=codepath.codedir(VIM.evaluate("getcwd()"), VIM.evaluate("g:code_path"))
     VIM.evaluate("add(roots,\"#{result}\")")
 RUBY
     return get(roots,0)
