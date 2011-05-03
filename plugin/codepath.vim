@@ -6,7 +6,7 @@
 "              https://github.com/lucapette/codepath.vim.
 "
 " Maintainer:  Luca Pette <lucapette@gmail.com>
-" Last Change: 26 January, 2011
+" Last Change: 02 May, 2011
 " License:     This program is free software. It comes without any warranty,
 "              to the extent permitted by applicable law. You can redistribute
 "              it and/or modify it under the terms of the Do What The Fuck You
@@ -29,37 +29,47 @@ if !exists("g:codepath")
 endif
 
 if !exists("g:codepath_tags_file")
-        let g:codepath_tags = "tags"
+    let g:codepath_tags = "tags"
 endif
 
-let loadedcode_path = 1
+let loaded_codepath = 1
 
 ruby << RUBY
-require "#{ENV['HOME']}/.vim/ruby/codepath"
+begin
+require 'rubygems'
+require 'codepath'
+rescue LoadError
+VIM::message("Please run gem install codepath")
+end
+
 def codepath
-   @codepath ||= CodePath.new(VIM.evaluate("g:codepath"))
+    @codepath ||= CodePath.new(VIM.evaluate("g:codepath"))
 end
 RUBY
 
-function! CodePath()
+function! codepath#path()
     let roots = []
     ruby << RUBY
-    result=codepath.codedir(VIM.evaluate("getcwd()"))
+    result=codepath.project_dir(VIM.evaluate("getcwd()"))
     VIM.evaluate("add(roots,\"#{result}\")")
 RUBY
     return get(roots,0)
 endfunction
 
+function! codepath#projectname()
+    return expand("%")
+endfunction
+
 if exists("g:codepath_add_to_path")
     ruby << RUBY
     current_dir = VIM.evaluate("getcwd()")
-    if codepath.codedir?(current_dir)
-        subdirs_path=codepath.subdirs(VIM.evaluate("CodePath()"))
+    if codepath.in_dir?(current_dir)
+        subdirs_path=codepath.subdirs(VIM.evaluate("codepath#path()"))
         VIM.set_option("path+=#{subdirs_path}")
     end
 RUBY
 endif
 
 if exists("g:codepath_add_to_tags")
-    let &tags = &tags . "," . CodePath(). "/tags"
+    let &tags = &tags . "," . codepath#path(). "/tags"
 endif
