@@ -56,8 +56,21 @@ RUBY
     return get(roots,0)
 endfunction
 
-function! codepath#projectname()
-    return expand("%")
+function! codepath#statusline()
+    let roots = []
+    ruby << RUBY
+    result=codepath.project_name(VIM.evaluate("expand('%:p')"))
+    puts result
+    VIM.evaluate("add(roots,\"#{result}\")")
+RUBY
+
+  let project_name = get(roots, 0)
+
+  if project_name == ""
+    return "[" . expand('%F') . "]"
+  else
+    return "[" . project_name . "][" . expand('%') . "]"
+  endif
 endfunction
 
 if exists("g:codepath_add_to_path")
