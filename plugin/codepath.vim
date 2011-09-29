@@ -19,70 +19,17 @@ if exists("loaded_codepath")
     finish
 endif
 
-if has("ruby") < 1
-    echoerr "codepath: it requires +ruby feature"
-    finish
-endif
-
 if !exists("g:codepath")
     let g:codepath = $HOME."/code"
 endif
 
-if !exists("g:codepath_tags_file")
-    let g:codepath_tags = "tags"
-endif
-
 let loaded_codepath = 1
 
-ruby << RUBY
-begin
-require 'rubygems'
-require 'codepath'
-rescue LoadError
-VIM::message("Please run gem install codepath")
-end
-
-def codepath
-    @codepath ||= CodePath.new(VIM.evaluate("g:codepath"))
-end
-RUBY
-
 function! codepath#path()
-    let roots = []
-    ruby << RUBY
-    result=codepath.project_dir(VIM.evaluate("getcwd()"))
-    VIM.evaluate("add(roots,\"#{result}\")")
-RUBY
-    return get(roots,0)
-endfunction
-
-function! codepath#statusline()
-    let roots = []
-    ruby << RUBY
-    result=codepath.project_name(VIM.evaluate("expand('%:p')"))
-    puts result
-    VIM.evaluate("add(roots,\"#{result}\")")
-RUBY
-
-  let project_name = get(roots, 0)
-
-  if project_name == ""
-    return "[" . expand('%F') . "]"
+  let current_dir = getcwd()
+  if match(current_dir, g:codepath) >= 0
+    return g:codepath.'/'.split(current_dir,'/')[len(split(g:codepath, "/"))]
   else
-    return "[" . project_name . "][" . expand('%') . "]"
+    return current_dir
   endif
 endfunction
-
-if exists("g:codepath_add_to_path")
-    ruby << RUBY
-    current_dir = VIM.evaluate("getcwd()")
-    if codepath.in_dir?(current_dir)
-        subdirs_path=codepath.subdirs(VIM.evaluate("codepath#path()"))
-        VIM.set_option("path+=#{subdirs_path}")
-    end
-RUBY
-endif
-
-if exists("g:codepath_add_to_tags")
-    let &tags = &tags . "," . codepath#path(). "/tags"
-endif
